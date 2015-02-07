@@ -2,7 +2,6 @@
 
 namespace MediaBrowser.Plugins.JupiterBroadcasting
 {
-	
 	[XmlType(AnonymousType = true)]
 	[XmlRoot(Namespace = "", IsNullable = false)]
 	public partial class rss
@@ -48,14 +47,14 @@ namespace MediaBrowser.Plugins.JupiterBroadcasting
 		[XmlElement(Namespace = "http://www.itunes.com/dtds/podcast-1.0.dtd")]
 		public string block { get; set; }
 
-		[XmlElement(Namespace = "http://www.w3.org/2005/Atom")]
+		[XmlElement("link", Namespace = "http://www.w3.org/2005/Atom")]
 		public link1 feedLink { get; set; }
 
 		[XmlElement(Namespace = "http://rssnamespace.org/feedburner/ext/1.0")]
 		public info info { get; set; }
 
 		[XmlElement(Namespace = "http://www.w3.org/2005/Atom")]
-		public link2 advertisement { get; set; }
+		public link2 advertisementLink { get; set; }
 
 		[XmlElement(Namespace = "http://search.yahoo.com/mrss/")]
 		public string copyright { get; set; }
@@ -63,14 +62,17 @@ namespace MediaBrowser.Plugins.JupiterBroadcasting
 		[XmlElement(Namespace = "http://search.yahoo.com/mrss/")]
 		public urlAttribute thumbnail { get; set; }
 
-		[XmlElement(Namespace = "http://search.yahoo.com/mrss/")]
+		[XmlElement("keywords", Namespace = "http://search.yahoo.com/mrss/")]
+		public string keywords1 { get; set; }
+
+		[XmlElement("category", Namespace = "http://search.yahoo.com/mrss/")]
 		public string[] mediaCategory { get; set; }
 
-		[XmlElement(Namespace = "http://www.itunes.com/dtds/podcast-1.0.dtd")]
+		[XmlElement("owner", Namespace = "http://www.itunes.com/dtds/podcast-1.0.dtd")]
 		public owner itunesOwner { get; set; }
 
-		[XmlElement(Namespace = "http://www.itunes.com/dtds/podcast-1.0.dtd")]
-		public string keywords { get; set; }
+		[XmlElement("keywords", Namespace = "http://www.itunes.com/dtds/podcast-1.0.dtd")]
+		public string keywords2 { get; set; }
 
 		[XmlElement(Namespace = "http://www.itunes.com/dtds/podcast-1.0.dtd")]
 		public string subtitle { get; set; }
@@ -84,16 +86,16 @@ namespace MediaBrowser.Plugins.JupiterBroadcasting
 		[XmlElement("item")]
 		public rssChannelItem[] item { get; set; }
 
-		[XmlElement(Namespace = "http://www.w3.org/2005/Atom")] 
+		[XmlElement("copyright", Namespace = "http://www.w3.org/2005/Atom")] 
 		public string copyright2 { get; set; }
 
-		[XmlElement(Namespace = "http://search.yahoo.com/mrss/")]
+		[XmlElement("author", Namespace = "http://search.yahoo.com/mrss/")]
 		public credit author2 { get; set; }
 
 		[XmlElement(Namespace = "http://search.yahoo.com/mrss/")]
 		public string rating { get; set; }
 
-		[XmlElement(Namespace = "http://search.yahoo.com/mrss/")]
+		[XmlElement("description", Namespace = "http://search.yahoo.com/mrss/")]
 		public mediaDescription descript { get; set; }
 	}
 
@@ -112,7 +114,7 @@ namespace MediaBrowser.Plugins.JupiterBroadcasting
 	[XmlRoot(Namespace = "http://www.w3.org/2005/Atom", IsNullable = false)]
 	public partial class link1
 	{
-		[XmlAttribute()]
+		[XmlAttribute("atom10")]
 		public string atom10 { get; set; }
 
 		[XmlAttribute()]
@@ -129,7 +131,7 @@ namespace MediaBrowser.Plugins.JupiterBroadcasting
 	[XmlRoot(Namespace = "http://www.w3.org/2005/Atom", IsNullable = false)]
 	public partial class link2
 	{
-		[XmlAttribute()]
+		[XmlAttribute("atom10")]
 		public string atom10 { get; set; }
 
 		[XmlAttribute()]
@@ -237,7 +239,8 @@ namespace MediaBrowser.Plugins.JupiterBroadcasting
 		[XmlElement(Namespace = "http://search.yahoo.com/mrss/")]
 		public urlAttribute thumbnail { get; set; }
 
-		public string authot { get; set; }
+		[XmlElement("author")]
+		public string author2 { get; set; }
 
 		[XmlElement(Namespace = "http://search.yahoo.com/mrss/")]
 		public content content { get; set; }
@@ -284,12 +287,16 @@ namespace MediaBrowser.Plugins.JupiterBroadcasting
 		public string type { get; set; }
 	}
 
+	[XmlType(AnonymousType = true, Namespace = "http://search.yahoo.com/mrss/")]
+	[XmlRoot(Namespace = "http://search.yahoo.com/mrss/", IsNullable = false)]
 	public partial class credit
 	{
 		[XmlAttribute()]
 		public string role { get; set; }
 	}
 
+	[XmlType(AnonymousType = true, Namespace = "http://search.yahoo.com/mrss/")]
+	[XmlRoot(Namespace = "http://search.yahoo.com/mrss/", IsNullable = false)]
 	public partial class mediaDescription
 	{
 		[XmlAttribute()]

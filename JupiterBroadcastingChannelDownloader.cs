@@ -27,7 +27,6 @@ namespace MediaBrowser.Plugins.JupiterBroadcasting
 				return _xmlSerializer.DeserializeFromStream(typeof(rss), xml) as rss;
 			}
 		}
-
 	}
 }
 

@@ -149,22 +149,22 @@ namespace MediaBrowser.Plugins.JupiterBroadcasting
 				baseurl = "http://www.jupiterbroadcasting.com/feeds/FauxShowHD.xml";
 				break;
 			case "scibyte":
-				baseurl = "http://feeds.feedburner.com/scibytehd.xml";
+				baseurl = "http://feeds.feedburner.com/scibytehd";
 				break;
 			case "unfilter":
 				baseurl = "http://www.jupiterbroadcasting.com/feeds/unfilterHD.xml";
 				break;
 			case "techsnap":
-				baseurl = "http://feeds.feedburner.com/techsnaphd.xml";
+				baseurl = "http://feeds.feedburner.com/techsnaphd";
 				break;
 			case "howto":
 				baseurl = "http://feeds.feedburner.com/HowtoLinuxHd";
 				break;
 			case "bsd":
-				baseurl = "http://feeds.feedburner.com/BsdNowHd.xml";
+				baseurl = "http://feeds.feedburner.com/BsdNowHd";
 				break;
 			case "las":
-				baseurl = "http://feeds.feedburner.com/linuxashd.xml";
+				baseurl = "http://feeds.feedburner.com/linuxashd";
 				break;
 			default:
 				throw new ArgumentException("FolderId was not what I expected: " + query.FolderId);
@@ -176,8 +176,6 @@ namespace MediaBrowser.Plugins.JupiterBroadcasting
 
 			var items = new List<ChannelItemInfo>();
 
-			_logger.Debug ("itemslist is: " + itemslist);
-
 			foreach (var podcast in videos.channel.item)
 			{
 				var mediaInfo = new List<ChannelMediaInfo>
@@ -185,31 +183,31 @@ namespace MediaBrowser.Plugins.JupiterBroadcasting
 					new ChannelMediaInfo
 					{
 						Protocol = MediaProtocol.Http,
-						Path = podcast.enclosure.url,
+						Path = podcast.content.url,
 						Width = 1280,
 						Height = 720,
 					}
 				};
 
-				var runtimeArray = podcast.duration.Split(':');
-				int hours = 0;
-				int minutes;
-				int seconds;
-				if (Equals (runtimeArray.Count (), 2)) 
-				{
-					int.TryParse (runtimeArray [0], out minutes);
-					int.TryParse (runtimeArray [1], out seconds);
-				}
-				else
-				{
-					int.TryParse (runtimeArray [0], out hours);
-					int.TryParse (runtimeArray [1], out minutes);
-					int.TryParse (runtimeArray [2], out seconds);
-				}
-				long runtime = (hours * 60) + minutes;
-				runtime = TimeSpan.FromMinutes(runtime).Ticks;
-
-				_logger.Debug ("Runtime is: " + runtime);
+//				For some unknown reason, attempting to parse the runtime throws a null object reference exception.
+//
+//				var runtimeArray = podcast.duration.Split(':');
+//				int hours = 0;
+//				int minutes;
+//				int seconds;
+//				if (Equals (runtimeArray.Count (), 2)) 
+//				{
+//					int.TryParse (runtimeArray [0], out minutes);
+//					int.TryParse (runtimeArray [1], out seconds);
+//				}
+//				else
+//				{
+//					int.TryParse (runtimeArray [0], out hours);
+//					int.TryParse (runtimeArray [1], out minutes);
+//					int.TryParse (runtimeArray [2], out seconds);
+//				}
+//				long runtime = (hours * 60) + minutes;
+//				runtime = TimeSpan.FromMinutes(runtime).Ticks;
 
 				items.Add(new ChannelItemInfo 
 					{
@@ -218,9 +216,9 @@ namespace MediaBrowser.Plugins.JupiterBroadcasting
 						IsInfiniteStream = true,
 						MediaType = ChannelMediaType.Video,
 						MediaSources = mediaInfo,
-						RunTimeTicks = runtime,
+//						RunTimeTicks = runtime,
 						Name = podcast.title,
-						Id = podcast.link,
+						Id = podcast.content.url,
 						Type = ChannelItemType.Media,
 						DateCreated = !String.IsNullOrEmpty(podcast.pubDate) ?
 							Convert.ToDateTime(podcast.pubDate) : (DateTime?)null,
@@ -229,8 +227,6 @@ namespace MediaBrowser.Plugins.JupiterBroadcasting
 						Overview = podcast.summary,
 					});
 			}
-
-			_logger.Debug ("Adding " + items + "to ChannelItemResult.");
 
 			return new ChannelItemResult
 			{
@@ -242,8 +238,6 @@ namespace MediaBrowser.Plugins.JupiterBroadcasting
 		public async Task<ChannelItemResult> GetChannelItems (InternalChannelItemQuery query, CancellationToken cancellationToken)
 		{
 			ChannelItemResult result;
-
-			_logger.Debug ("cat ID:" + query.FolderId);
 
 			if (query.FolderId == null) {
 				result = await GetChannelsInternal(query, cancellationToken).ConfigureAwait(false);
@@ -275,8 +269,6 @@ namespace MediaBrowser.Plugins.JupiterBroadcasting
 
 		public async Task<IEnumerable<ChannelMediaInfo>> GetChannelItemMediaInfo (string id, CancellationToken cancellationToken)
 		{
-			_logger.Debug ("*** JUPITERBROADCASTING PLAYBACK Stream: " + id + "***");
-
 			return new List<ChannelMediaInfo>
 			{
 				new ChannelMediaInfo
