@@ -13,7 +13,7 @@ using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Serialization;
 
-namespace MediaBrowser.Plugins.JupiterBroadcasting
+namespace MediaBrowser.Channels.JupiterBroadcasting
 {
 	public class JupiterBroadcastingChannel : IChannel, IRequiresMediaInfoCallback
 	{

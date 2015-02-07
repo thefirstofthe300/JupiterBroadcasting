@@ -1,7 +1,7 @@
 ﻿using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Model.Serialization;
-using MediaBrowser.Plugins.JupiterBroadcasting.Configuration;
+using MediaBrowser.Channels.JupiterBroadcasting.Configuration;
 
 namespace MediaBrowser.Plugins.JupiterBroadcasting
 {
