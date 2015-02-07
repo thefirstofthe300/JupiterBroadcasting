@@ -43,7 +43,7 @@ namespace MediaBrowser.Plugins.JupiterBroadcasting
 		public string DataVersion
 		{
 			// Increment as needed to invalidate all caches.
-			get { return "1"; }
+			get { return "2"; }
 		}
 
 		public string HomePageUrl
@@ -65,11 +65,11 @@ namespace MediaBrowser.Plugins.JupiterBroadcasting
 			case ImageType.Backdrop:
 			case ImageType.Primary:
 				{
-					var path = GetType().Namespace + ".Images." + type.ToString().ToLower() + ".jpg";
+					var path = GetType().Namespace + ".Resources.images.jupiterbroadcasting.png";
 
 					return Task.FromResult(new DynamicImageResponse
 						{
-							Format = ImageFormat.Jpg,
+							Format = ImageFormat.Png,
 							HasImage = true,
 							Stream = GetType().Assembly.GetManifestResourceStream(path)
 						});
@@ -106,6 +106,7 @@ namespace MediaBrowser.Plugins.JupiterBroadcasting
 
 		private async Task<ChannelItemResult> GetChannelsInternal(InternalChannelItemQuery query, CancellationToken cancellationToken)
 		{
+			_logger.Debug ("Category ID: " + query.FolderId);
 			var jupiterChannels = new List<ChannelItemInfo>();
 
 			var masterChannelList = new List<KeyValuePair<string,string>> {
@@ -123,7 +124,7 @@ namespace MediaBrowser.Plugins.JupiterBroadcasting
 				jupiterChannels.Add (new ChannelItemInfo 
 				{
 					Type = ChannelItemType.Folder,
-					ImageUrl = "https://www.github.com/DaBungalow/MediaBrowser.Plugins.JupiterBroadcasting/master/Resources/images/" + currentChannel.Key + ".png",
+					ImageUrl = "https://raw.githubusercontent.com/DaBungalow/MediaBrowser.Plugins.JupiterBroadcasting/master/Resources/images/" + currentChannel.Key + ".jpg",
 					Name = currentChannel.Value,
 					Id = currentChannel.Key
 				});
@@ -170,20 +171,20 @@ namespace MediaBrowser.Plugins.JupiterBroadcasting
 				throw new ArgumentException("FolderId was not what I expected: " + query.FolderId);
 			}
 
-			var videos = await downloader.GetStreamList(baseurl, offset, cancellationToken).ConfigureAwait(false);
+			var podcasts = await downloader.GetStreamList(baseurl, offset, cancellationToken).ConfigureAwait(false);
 
-			var itemslist = videos.channel.item;
+			var itemslist = podcasts.channel.item;
 
 			var items = new List<ChannelItemInfo>();
 
-			foreach (var podcast in videos.channel.item)
+			foreach (var podcast in podcasts.channel.item)
 			{
 				var mediaInfo = new List<ChannelMediaInfo>
 				{
 					new ChannelMediaInfo
 					{
 						Protocol = MediaProtocol.Http,
-						Path = podcast.content.url,
+						Path = podcast.enclosure.url,
 						Width = 1280,
 						Height = 720,
 					}
@@ -212,13 +213,13 @@ namespace MediaBrowser.Plugins.JupiterBroadcasting
 				items.Add(new ChannelItemInfo 
 					{
 						ContentType = ChannelMediaContentType.Podcast,
-						ImageUrl = "https://www.github.com/DaBungalow/MediaBrowser.Plugins.JupiterBroadcasting/master/Resources/images/" + query.FolderId + ".png",
+						ImageUrl = "https://raw.githubusercontent.com/DaBungalow/MediaBrowser.Plugins.JupiterBroadcasting/master/Resources/images/" + query.FolderId + ".jpg",
 						IsInfiniteStream = true,
 						MediaType = ChannelMediaType.Video,
 						MediaSources = mediaInfo,
 //						RunTimeTicks = runtime,
 						Name = podcast.title,
-						Id = podcast.content.url,
+						Id = podcast.enclosure.url,
 						Type = ChannelItemType.Media,
 						DateCreated = !String.IsNullOrEmpty(podcast.pubDate) ?
 							Convert.ToDateTime(podcast.pubDate) : (DateTime?)null,
