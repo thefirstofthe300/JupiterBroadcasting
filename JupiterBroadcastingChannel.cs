@@ -43,7 +43,7 @@ namespace MediaBrowser.Channels.JupiterBroadcasting
 		public string DataVersion
 		{
 			// Increment as needed to invalidate all caches.
-			get { return "2"; }
+			get { return "1"; }
 		}
 
 		public string HomePageUrl
@@ -118,7 +118,8 @@ namespace MediaBrowser.Channels.JupiterBroadcasting
 				new KeyValuePair<string, string>("bsd", "BSD Now"),
 				new KeyValuePair<string, string>("las", "Linux Action Show"),
                 new KeyValuePair<string, string>("coder", "Coder Radio"),
-                new KeyValuePair<string, string>("unplugged", "Linux Unplugged")
+                new KeyValuePair<string, string>("unplugged", "Linux Unplugged"),
+                new KeyValuePair<string, string>("techtalk", "Tech Talk Today")
 			};
 
 			foreach (var currentChannel in masterChannelList)
@@ -126,7 +127,7 @@ namespace MediaBrowser.Channels.JupiterBroadcasting
 				jupiterChannels.Add (new ChannelItemInfo 
 				{
 					Type = ChannelItemType.Folder,
-					ImageUrl = "https://raw.githubusercontent.com/DaBungalow/MediaBrowser.Plugins.JupiterBroadcasting/master/Resources/images/" + currentChannel.Key + ".jpg",
+					ImageUrl = "https://raw.githubusercontent.com/DaBungalow/MediaBrowser.Channels.JupiterBroadcasting/master/Resources/images/" + currentChannel.Key + ".jpg",
 					Name = currentChannel.Value,
 					Id = currentChannel.Key
 				});
@@ -175,6 +176,9 @@ namespace MediaBrowser.Channels.JupiterBroadcasting
             case "coder":
                 baseurl = "http://feeds.feedburner.com/coderradiovideo";
                 break;
+            case "techtalk":
+                baseurl = "http://feedpress.me/t3mob";
+                break;
 			default:
 				throw new ArgumentException("FolderId was not what I expected: " + query.FolderId);
 			}
@@ -188,7 +192,7 @@ namespace MediaBrowser.Channels.JupiterBroadcasting
 			foreach (var podcast in podcasts.channel.item)
 			{
 				var mediaInfo = new List<ChannelMediaInfo>{};
-                if(query.FolderId == "coder" || query.FolderId == "unplugged")
+                if(query.FolderId == "coder" || query.FolderId == "unplugged" || query.FolderId == "techtalk")
 				{
                     mediaInfo.Add(new ChannelMediaInfo
                     {
@@ -210,31 +214,73 @@ namespace MediaBrowser.Channels.JupiterBroadcasting
                 }
                 //For some unknown reason, attempting to parse the runtime throws a null object reference exception.
 
-				var runtimeArray = podcast.duration.Split(':');
-				int hours = 0;
-				int minutes;
-   			    int.TryParse (runtimeArray [0], out hours);
-    		    int.TryParse (runtimeArray [1], out minutes);		
-				long runtime = (hours * 60) + minutes;
-    			runtime = TimeSpan.FromMinutes(runtime).Ticks;
+                long runtime;
 
-				items.Add(new ChannelItemInfo 
-					{
-						ContentType = ChannelMediaContentType.Podcast,
-						ImageUrl = "https://raw.githubusercontent.com/DaBungalow/MediaBrowser.Plugins.JupiterBroadcasting/master/Resources/images/" + query.FolderId + ".jpg",
-						IsInfiniteStream = true,
-						MediaType = ChannelMediaType.Video,
-						MediaSources = mediaInfo,
-//						RunTimeTicks = runtime,
-						Name = podcast.title,
-						Id = podcast.enclosure.url,
-						Type = ChannelItemType.Media,
-						DateCreated = !String.IsNullOrEmpty(podcast.pubDate) ?
-							Convert.ToDateTime(podcast.pubDate) : (DateTime?)null,
-						PremiereDate = !String.IsNullOrEmpty(podcast.pubDate) ?
-							Convert.ToDateTime(podcast.pubDate) : (DateTime?)null,
-						Overview = podcast.summary,
-					});
+                if (podcast.duration != null)
+                {
+                    var runtimeArray = podcast.duration.Split(':');
+                    _logger.Debug("Podcast duration is: " + podcast.duration);
+                    int hours;
+                    int minutes;
+                    int seconds;
+                    _logger.Debug("Runtime array length: " + runtimeArray.Length);
+                    if (runtimeArray.Length == 3)
+                    {
+                        _logger.Debug("Podcast hours is: " + runtimeArray[0]);
+                        _logger.Debug("Podcast minutes is: " + runtimeArray[1]);
+                        _logger.Debug("Podcast seconds is: " + runtimeArray[2]);
+                        int.TryParse(runtimeArray[0], out hours);
+                        int.TryParse(runtimeArray[1], out minutes);
+                        int.TryParse(runtimeArray[2], out seconds);
+                    }
+                    else
+                    {
+                        _logger.Debug("Podcast minutes is: " + runtimeArray[0]);
+                        _logger.Debug("Podcast seconds is: " + runtimeArray[1]);
+                        hours = 0;
+                        int.TryParse(runtimeArray[0], out minutes);
+                        int.TryParse(runtimeArray[1], out seconds);
+                    }
+                    runtime = (hours * 3600) + (minutes * 60) + seconds;
+                    runtime = TimeSpan.FromSeconds(runtime).Ticks;
+
+                    items.Add(new ChannelItemInfo
+                    {
+                        ContentType = ChannelMediaContentType.Podcast,
+                        ImageUrl = "https://raw.githubusercontent.com/DaBungalow/MediaBrowser.Channels.JupiterBroadcasting/master/Resources/images/" + query.FolderId + ".jpg",
+                        IsInfiniteStream = true,
+                        MediaType = ChannelMediaType.Video,
+                        MediaSources = mediaInfo,
+                        RunTimeTicks = runtime,
+                        Name = podcast.title,
+                        Id = podcast.enclosure.url,
+                        Type = ChannelItemType.Media,
+                        DateCreated = !String.IsNullOrEmpty(podcast.pubDate) ?
+                            Convert.ToDateTime(podcast.pubDate) : (DateTime?)null,
+                        PremiereDate = !String.IsNullOrEmpty(podcast.pubDate) ?
+                            Convert.ToDateTime(podcast.pubDate) : (DateTime?)null,
+                        Overview = podcast.summary,
+                    });
+                }
+                else
+                {
+                    items.Add(new ChannelItemInfo
+                    {
+                        ContentType = ChannelMediaContentType.Podcast,
+                        ImageUrl = "https://raw.githubusercontent.com/DaBungalow/MediaBrowser.Channels.JupiterBroadcasting/master/Resources/images/" + query.FolderId + ".jpg",
+                        IsInfiniteStream = true,
+                        MediaType = ChannelMediaType.Video,
+                        MediaSources = mediaInfo,
+                        Name = podcast.title,
+                        Id = podcast.enclosure.url,
+                        Type = ChannelItemType.Media,
+                        DateCreated = !String.IsNullOrEmpty(podcast.pubDate) ?
+                            Convert.ToDateTime(podcast.pubDate) : (DateTime?)null,
+                        PremiereDate = !String.IsNullOrEmpty(podcast.pubDate) ?
+                            Convert.ToDateTime(podcast.pubDate) : (DateTime?)null,
+                        Overview = podcast.summary,
+                    });
+                }
 			}
 
 			return new ChannelItemResult

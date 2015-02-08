@@ -56,7 +56,9 @@
     <None Include="Resources\images\howto.jpg" />
     <None Include="MediaBrowser.Channels.JupiterBroadcasting.sln" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Content Include="Resources\images\techtalk.jpg" />
+  </ItemGroup>
   <ItemGroup />
   <ItemGroup>
     <EmbeddedResource Include="Resources\images\coder.jpg" />
