@@ -116,7 +116,9 @@ namespace MediaBrowser.Channels.JupiterBroadcasting
 				new KeyValuePair<string, string>("techsnap","TechSNAP"),
 				new KeyValuePair<string, string>("howto", "HowTo Linux"),
 				new KeyValuePair<string, string>("bsd", "BSD Now"),
-				new KeyValuePair<string, string>("las", "Linux Action Show")
+				new KeyValuePair<string, string>("las", "Linux Action Show"),
+                new KeyValuePair<string, string>("coder", "Coder Radio"),
+                new KeyValuePair<string, string>("unplugged", "Linux Unplugged")
 			};
 
 			foreach (var currentChannel in masterChannelList)
@@ -167,6 +169,12 @@ namespace MediaBrowser.Channels.JupiterBroadcasting
 			case "las":
 				baseurl = "http://feeds.feedburner.com/linuxashd";
 				break;
+            case "unplugged":
+                baseurl = "http://feeds.feedburner.com/linuxunvid";
+                break;
+            case "coder":
+                baseurl = "http://feeds.feedburner.com/coderradiovideo";
+                break;
 			default:
 				throw new ArgumentException("FolderId was not what I expected: " + query.FolderId);
 			}
@@ -179,36 +187,36 @@ namespace MediaBrowser.Channels.JupiterBroadcasting
 
 			foreach (var podcast in podcasts.channel.item)
 			{
-				var mediaInfo = new List<ChannelMediaInfo>
+				var mediaInfo = new List<ChannelMediaInfo>{};
+                if(query.FolderId == "coder" || query.FolderId == "unplugged")
 				{
-					new ChannelMediaInfo
-					{
-						Protocol = MediaProtocol.Http,
-						Path = podcast.enclosure.url,
-						Width = 1280,
-						Height = 720,
-					}
-				};
+                    mediaInfo.Add(new ChannelMediaInfo
+                    {
+                        Protocol = MediaProtocol.Http,
+                        Path = podcast.enclosure.url,
+                        Width = 768,
+                        Height = 432
+                    });
+				}
+                else
+                {
+                    mediaInfo.Add(new ChannelMediaInfo
+                    {
+                        Protocol = MediaProtocol.Http,
+                        Path = podcast.enclosure.url,
+                        Width = 1200,
+                        Height = 720
+                    });
+                }
+                //For some unknown reason, attempting to parse the runtime throws a null object reference exception.
 
-//				For some unknown reason, attempting to parse the runtime throws a null object reference exception.
-//
-//				var runtimeArray = podcast.duration.Split(':');
-//				int hours = 0;
-//				int minutes;
-//				int seconds;
-//				if (Equals (runtimeArray.Count (), 2)) 
-//				{
-//					int.TryParse (runtimeArray [0], out minutes);
-//					int.TryParse (runtimeArray [1], out seconds);
-//				}
-//				else
-//				{
-//					int.TryParse (runtimeArray [0], out hours);
-//					int.TryParse (runtimeArray [1], out minutes);
-//					int.TryParse (runtimeArray [2], out seconds);
-//				}
-//				long runtime = (hours * 60) + minutes;
-//				runtime = TimeSpan.FromMinutes(runtime).Ticks;
+				var runtimeArray = podcast.duration.Split(':');
+				int hours = 0;
+				int minutes;
+   			    int.TryParse (runtimeArray [0], out hours);
+    		    int.TryParse (runtimeArray [1], out minutes);		
+				long runtime = (hours * 60) + minutes;
+    			runtime = TimeSpan.FromMinutes(runtime).Ticks;
 
 				items.Add(new ChannelItemInfo 
 					{
