@@ -73,6 +73,16 @@ namespace MediaBrowser.Channels.JupiterBroadcasting
                     });
                 }
 			case ImageType.Backdrop:
+                {
+                    var path = GetType().Namespace + ".Resources.images.jupiterbackdrop.jpg";
+
+                    return Task.FromResult(new DynamicImageResponse
+                    {
+                        Format = ImageFormat.Jpg,
+                        HasImage = true,
+                        Stream = GetType().Assembly.GetManifestResourceStream(path)
+                    });
+                }
 			case ImageType.Primary:
 				{
 					var path = GetType().Namespace + ".Resources.images.jupiterbroadcasting.png";
