@@ -58,6 +58,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Resources\images\techtalk.jpg" />
+    <Content Include="Resources\images\thumb.png" />
   </ItemGroup>
   <ItemGroup />
   <ItemGroup>

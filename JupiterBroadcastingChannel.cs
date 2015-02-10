@@ -15,7 +15,7 @@ using MediaBrowser.Model.Serialization;
 
 namespace MediaBrowser.Channels.JupiterBroadcasting
 {
-	public class JupiterBroadcastingChannel : IChannel, IRequiresMediaInfoCallback
+	public class JupiterBroadcastingChannel : IChannel, IRequiresMediaInfoCallback, ISupportsLatestMedia
 	{
 		private readonly IHttpClient _httpClient;
 		private readonly ILogger _logger;
@@ -62,6 +62,16 @@ namespace MediaBrowser.Channels.JupiterBroadcasting
 			switch (type)
 			{
 			case ImageType.Thumb:
+                {
+                    var path = GetType().Namespace + ".Resources.images.thumb.png";
+
+                    return Task.FromResult(new DynamicImageResponse
+                    {
+                        Format = ImageFormat.Png,
+                        HasImage = true,
+                        Stream = GetType().Assembly.GetManifestResourceStream(path)
+                    });
+                }
 			case ImageType.Backdrop:
 			case ImageType.Primary:
 				{
@@ -106,7 +116,7 @@ namespace MediaBrowser.Channels.JupiterBroadcasting
 
 		private async Task<ChannelItemResult> GetChannelsInternal(InternalChannelItemQuery query, CancellationToken cancellationToken)
 		{
-			_logger.Debug ("Category ID: " + query.FolderId);
+			_logger.Debug ("Channels ID: " + query.FolderId);
 			var jupiterChannels = new List<ChannelItemInfo>();
 
 			var masterChannelList = new List<KeyValuePair<string,string>> {
@@ -142,6 +152,7 @@ namespace MediaBrowser.Channels.JupiterBroadcasting
 
 		private async Task<ChannelItemResult> GetChannelItemsInternal(InternalChannelItemQuery query, CancellationToken cancellationToken)
 		{
+            _logger.Debug("Getting internal channel items: " + query.FolderId);
 			var offset = query.StartIndex.GetValueOrDefault();
 			var downloader = new JupiterChannelItemsDownloader(_logger, _xmlSerializer, _httpClient);
 
@@ -219,24 +230,17 @@ namespace MediaBrowser.Channels.JupiterBroadcasting
                 if (podcast.duration != null)
                 {
                     var runtimeArray = podcast.duration.Split(':');
-                    _logger.Debug("Podcast duration is: " + podcast.duration);
                     int hours;
                     int minutes;
                     int seconds;
-                    _logger.Debug("Runtime array length: " + runtimeArray.Length);
                     if (runtimeArray.Length == 3)
-                    {
-                        _logger.Debug("Podcast hours is: " + runtimeArray[0]);
-                        _logger.Debug("Podcast minutes is: " + runtimeArray[1]);
-                        _logger.Debug("Podcast seconds is: " + runtimeArray[2]);
+                    {                     
                         int.TryParse(runtimeArray[0], out hours);
                         int.TryParse(runtimeArray[1], out minutes);
                         int.TryParse(runtimeArray[2], out seconds);
                     }
                     else
                     {
-                        _logger.Debug("Podcast minutes is: " + runtimeArray[0]);
-                        _logger.Debug("Podcast seconds is: " + runtimeArray[1]);
                         hours = 0;
                         int.TryParse(runtimeArray[0], out minutes);
                         int.TryParse(runtimeArray[1], out seconds);
@@ -334,6 +338,211 @@ namespace MediaBrowser.Channels.JupiterBroadcasting
 				}
 			};
 		}
+
+        private async Task<IEnumerable<ChannelItemInfo>> GetChannelItemsInternal(string feedUrl, CancellationToken cancellationToken)
+        {
+            int offset = 0;
+
+		    var downloader = new JupiterChannelItemsDownloader(_logger, _xmlSerializer, _httpClient);
+
+			string baseurl = feedUrl;
+            string folderid;
+
+            switch (baseurl)
+            {
+                case "http://www.jupiterbroadcasting.com/feeds/FauxShowHD.xml":
+                    folderid = "faux";
+                    break;
+                case "http://feeds.feedburner.com/scibytehd":
+                    folderid = "scibyte";
+                    break;
+                case "http://www.jupiterbroadcasting.com/feeds/unfilterHD.xml":
+                    folderid = "unfilter";
+                    break;
+                case "http://feeds.feedburner.com/techsnaphd":
+                    folderid = "techsnap";
+                    break;
+                case "http://feeds.feedburner.com/HowtoLinuxHd":
+                    folderid = "howto";
+                    break;
+                case "http://feeds.feedburner.com/BsdNowHd":
+                    folderid = "bsd";
+                    break;
+                case "http://feeds.feedburner.com/linuxashd":
+                    folderid = "las";
+                    break;
+                case "http://feeds.feedburner.com/linuxunvid":
+                    folderid = "unplugged";
+                    break;
+                case "http://feeds.feedburner.com/coderradiovideo":
+                    folderid = "coder";
+                    break;
+                case "http://feedpress.me/t3mob":
+                    folderid = "techtalk";
+                    break;
+                default:
+                    folderid = "jupiterbroadcasting";
+                    break;
+            }
+
+			var podcasts = await downloader.GetStreamList(baseurl, offset, cancellationToken).ConfigureAwait(false);
+
+			var itemslist = podcasts.channel.item;
+
+			var items = new List<ChannelItemInfo>();
+
+			foreach (var podcast in podcasts.channel.item)
+			{
+				var mediaInfo = new List<ChannelMediaInfo>{};
+                if (baseurl == "http://feeds.feedburner.com/coderradiovideo" ||
+                    baseurl == "http://feeds.feedburner.com/linuxunvid" ||
+                    baseurl == "http://feedpress.me/t3mob")
+				{
+                    mediaInfo.Add(new ChannelMediaInfo
+                    {
+                        Protocol = MediaProtocol.Http,
+                        Path = podcast.enclosure.url,
+                        Width = 768,
+                        Height = 432
+                    });
+				}
+                else
+                {
+                    mediaInfo.Add(new ChannelMediaInfo
+                    {
+                        Protocol = MediaProtocol.Http,
+                        Path = podcast.enclosure.url,
+                        Width = 1200,
+                        Height = 720
+                    });
+                }
+
+                long runtime;
+
+                if (podcast.duration != null)
+                {
+                    var runtimeArray = podcast.duration.Split(':');
+                    int hours;
+                    int minutes;
+                    int seconds;
+                    if (runtimeArray.Length == 3)
+                    {
+                        int.TryParse(runtimeArray[0], out hours);
+                        int.TryParse(runtimeArray[1], out minutes);
+                        int.TryParse(runtimeArray[2], out seconds);
+                    }
+                    else
+                    {
+                        hours = 0;
+                        int.TryParse(runtimeArray[0], out minutes);
+                        int.TryParse(runtimeArray[1], out seconds);
+                    }
+                    runtime = (hours * 3600) + (minutes * 60) + seconds;
+                    runtime = TimeSpan.FromSeconds(runtime).Ticks;
+
+                    items.Add(new ChannelItemInfo
+                    {
+                        ContentType = ChannelMediaContentType.Podcast,
+                        ImageUrl = "https://raw.githubusercontent.com/DaBungalow/MediaBrowser.Channels.JupiterBroadcasting/master/Resources/images/" + folderid + ".jpg",
+                        IsInfiniteStream = true,
+                        MediaType = ChannelMediaType.Video,
+                        MediaSources = mediaInfo,
+                        RunTimeTicks = runtime,
+                        Name = podcast.title,
+                        Id = podcast.enclosure.url,
+                        Type = ChannelItemType.Media,
+                        DateCreated = !String.IsNullOrEmpty(podcast.pubDate) ?
+                            Convert.ToDateTime(podcast.pubDate) : (DateTime?)null,
+                        PremiereDate = !String.IsNullOrEmpty(podcast.pubDate) ?
+                            Convert.ToDateTime(podcast.pubDate) : (DateTime?)null,
+                        Overview = podcast.summary,
+                    });
+                }
+                else
+                {
+                    items.Add(new ChannelItemInfo
+                    {
+                        ContentType = ChannelMediaContentType.Podcast,
+                        ImageUrl = "https://raw.githubusercontent.com/DaBungalow/MediaBrowser.Channels.JupiterBroadcasting/master/Resources/images/" + folderid + ".jpg",
+                        IsInfiniteStream = true,
+                        MediaType = ChannelMediaType.Video,
+                        MediaSources = mediaInfo,
+                        Name = podcast.title,
+                        Id = podcast.enclosure.url,
+                        Type = ChannelItemType.Media,
+                        DateCreated = !String.IsNullOrEmpty(podcast.pubDate) ?
+                            Convert.ToDateTime(podcast.pubDate) : (DateTime?)null,
+                        PremiereDate = !String.IsNullOrEmpty(podcast.pubDate) ?
+                            Convert.ToDateTime(podcast.pubDate) : (DateTime?)null,
+                        Overview = podcast.summary,
+                    });
+                }
+            }
+            return items;
+        }
+
+        private async Task<ChannelItemResult> GetAllMedia(InternalAllChannelMediaQuery query, CancellationToken cancellationToken)
+        {
+            if (query.ContentTypes.Length > 0 && !query.ContentTypes.Contains(ChannelMediaContentType.Podcast))
+            {
+                return new ChannelItemResult();
+            }
+
+            string[] urls = {
+                "http://www.jupiterbroadcasting.com/feeds/FauxShowHD.xml",
+                "http://feeds.feedburner.com/scibytehd",
+                "http://www.jupiterbroadcasting.com/feeds/unfilterHD.xml",
+                "http://feeds.feedburner.com/techsnaphd",
+                "http://feeds.feedburner.com/HowtoLinuxHd",
+                "http://feeds.feedburner.com/BsdNowHd",
+                "http://feeds.feedburner.com/linuxashd",
+                "http://feeds.feedburner.com/linuxunvid",
+                "http://feeds.feedburner.com/coderradiovideo",
+                "http://feedpress.me/t3mob"
+            };
+
+            var tasks = urls.Select(async i =>
+            {
+                try
+                {
+                    return await GetChannelItemsInternal(i, cancellationToken).ConfigureAwait(false);
+                }
+                catch (Exception ex)
+                {
+                    _logger.Info("Failed to fetch the latest episodes: " + ex);
+                    return new List<ChannelItemInfo>();
+                }
+            });
+            
+            var items = (await Task.WhenAll(tasks).ConfigureAwait(false))
+                .SelectMany(i => i);
+
+            if (query.ContentTypes.Length > 0)
+            {
+                items = items.Where(i => query.ContentTypes.Contains(i.ContentType));
+            }
+
+            var all = items.ToList();
+
+            return new ChannelItemResult
+            {
+                Items = all,
+                TotalRecordCount = all.Count
+            };
+        }
+
+        public async Task<IEnumerable<ChannelItemInfo>> GetLatestMedia(ChannelLatestMediaSearch request, CancellationToken cancellationToken)
+        {
+            // Looks like the only way we can do this is by getting all, then sorting
+
+            var all = await GetAllMedia(new InternalAllChannelMediaQuery
+            {
+                UserId = request.UserId
+
+            }, cancellationToken).ConfigureAwait(false);
+
+            return all.Items.OrderByDescending(i => i.DateCreated ?? DateTime.MinValue);
+        }
 	}
 }
 
