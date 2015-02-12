@@ -121,6 +121,9 @@ namespace MediaBrowser.Channels.JupiterBroadcasting
 					ChannelItemSortField.PremiereDate,
 					ChannelItemSortField.Runtime,
 				},
+
+                SupportsContentDownloading = true,
+                SupportsSortOrderToggle = true,
 			};
 		}
 
