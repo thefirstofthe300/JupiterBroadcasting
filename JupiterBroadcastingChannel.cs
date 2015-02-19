@@ -15,7 +15,7 @@ using MediaBrowser.Model.Serialization;
 
 namespace MediaBrowser.Channels.JupiterBroadcasting
 {
-	public class JupiterBroadcastingChannel : IChannel, IRequiresMediaInfoCallback, ISupportsLatestMedia
+	public class JupiterBroadcastingChannel : IChannel, ISupportsLatestMedia
 	{
 		private readonly IHttpClient _httpClient;
 		private readonly ILogger _logger;
@@ -43,7 +43,7 @@ namespace MediaBrowser.Channels.JupiterBroadcasting
 		public string DataVersion
 		{
 			// Increment as needed to invalidate all caches.
-			get { return "1"; }
+			get { return "2"; }
 		}
 
 		public string HomePageUrl
@@ -56,7 +56,6 @@ namespace MediaBrowser.Channels.JupiterBroadcasting
 			get { return ChannelParentalRating.GeneralAudience; }
 		}
 
-		//TODO: Add the image collection and change the image type to whatever I have.
 		public Task<DynamicImageResponse> GetChannelImage (ImageType type, CancellationToken cancellationToken)
 		{
 			switch (type)
@@ -142,7 +141,8 @@ namespace MediaBrowser.Channels.JupiterBroadcasting
 				new KeyValuePair<string, string>("las", "Linux Action Show"),
                 new KeyValuePair<string, string>("coder", "Coder Radio"),
                 new KeyValuePair<string, string>("unplugged", "Linux Unplugged"),
-                new KeyValuePair<string, string>("techtalk", "Tech Talk Today")
+                new KeyValuePair<string, string>("techtalk", "Tech Talk Today"),
+                new KeyValuePair<string, string>("wtr", "Women in Tech Radio")
 			};
 
 			foreach (var currentChannel in masterChannelList)
@@ -203,6 +203,9 @@ namespace MediaBrowser.Channels.JupiterBroadcasting
             case "techtalk":
                 baseurl = "http://feedpress.me/t3mob";
                 break;
+            case "wtr":
+                baseurl = "http://feeds.feedburner.com/wtrmobile";
+                break;
 			default:
 				throw new ArgumentException("FolderId was not what I expected: " + query.FolderId);
 			}
@@ -216,12 +219,15 @@ namespace MediaBrowser.Channels.JupiterBroadcasting
 			foreach (var podcast in podcasts.channel.item)
 			{
 				var mediaInfo = new List<ChannelMediaInfo>{};
-                if(query.FolderId == "coder" || query.FolderId == "unplugged" || query.FolderId == "techtalk")
+                if(query.FolderId == "coder" || query.FolderId == "unplugged" || query.FolderId == "techtalk" || query.FolderId == "wtr")
 				{
                     mediaInfo.Add(new ChannelMediaInfo
                     {
-                        Protocol = MediaProtocol.Http,
                         Path = podcast.enclosure.url,
+                        Protocol = MediaProtocol.Http,
+                        Container = Container.MP4,
+                        AudioCodec = AudioCodec.AAC,
+                        VideoCodec = VideoCodec.H264,
                         Width = 768,
                         Height = 432
                     });
@@ -230,13 +236,15 @@ namespace MediaBrowser.Channels.JupiterBroadcasting
                 {
                     mediaInfo.Add(new ChannelMediaInfo
                     {
-                        Protocol = MediaProtocol.Http,
                         Path = podcast.enclosure.url,
+                        Protocol = MediaProtocol.Http,
+                        Container = Container.MP4,
+                        AudioCodec = AudioCodec.AAC,
+                        VideoCodec = VideoCodec.H264,
                         Width = 1200,
                         Height = 720
                     });
                 }
-                //For some unknown reason, attempting to parse the runtime throws a null object reference exception.
 
                 long runtime;
 
@@ -337,21 +345,6 @@ namespace MediaBrowser.Channels.JupiterBroadcasting
 			return true;
 		}
 
-	    // IRequiresMediaInfoCallback implementation
-
-		public async Task<IEnumerable<ChannelMediaInfo>> GetChannelItemMediaInfo (string id, CancellationToken cancellationToken)
-		{
-			return new List<ChannelMediaInfo>
-			{
-				new ChannelMediaInfo
-				{
-					Path = id,
-					Width = 1280,
-					Height = 720,
-				}
-			};
-		}
-
         private async Task<IEnumerable<ChannelItemInfo>> GetChannelItemsInternal(string feedUrl, CancellationToken cancellationToken)
         {
             int offset = 0;
@@ -393,6 +386,9 @@ namespace MediaBrowser.Channels.JupiterBroadcasting
                 case "http://feedpress.me/t3mob":
                     folderid = "techtalk";
                     break;
+                case "http://feeds.feedburner.com/wtrmobile":
+                    folderid = "wtr";
+                    break;
                 default:
                     folderid = "jupiterbroadcasting";
                     break;
@@ -409,12 +405,16 @@ namespace MediaBrowser.Channels.JupiterBroadcasting
 				var mediaInfo = new List<ChannelMediaInfo>{};
                 if (baseurl == "http://feeds.feedburner.com/coderradiovideo" ||
                     baseurl == "http://feeds.feedburner.com/linuxunvid" ||
-                    baseurl == "http://feedpress.me/t3mob")
+                    baseurl == "http://feedpress.me/t3mob" ||
+                    baseurl == "http://feeds.feedburner.com/wtrmobile")
 				{
                     mediaInfo.Add(new ChannelMediaInfo
                     {
-                        Protocol = MediaProtocol.Http,
                         Path = podcast.enclosure.url,
+                        Protocol = MediaProtocol.Http,
+                        Container = Container.MP4,
+                        AudioCodec = AudioCodec.AAC,
+                        VideoCodec = VideoCodec.H264,
                         Width = 768,
                         Height = 432
                     });
@@ -423,8 +423,12 @@ namespace MediaBrowser.Channels.JupiterBroadcasting
                 {
                     mediaInfo.Add(new ChannelMediaInfo
                     {
-                        Protocol = MediaProtocol.Http,
+
                         Path = podcast.enclosure.url,
+                        Protocol = MediaProtocol.Http,
+                        Container = Container.MP4,
+                        AudioCodec = AudioCodec.AAC,
+                        VideoCodec = VideoCodec.H264,
                         Width = 1200,
                         Height = 720
                     });
@@ -511,7 +515,8 @@ namespace MediaBrowser.Channels.JupiterBroadcasting
                 "http://feeds.feedburner.com/linuxashd",
                 "http://feeds.feedburner.com/linuxunvid",
                 "http://feeds.feedburner.com/coderradiovideo",
-                "http://feedpress.me/t3mob"
+                "http://feedpress.me/t3mob",
+                "http://feeds.feedburner.com/wtrmobile"
             };
 
             var tasks = urls.Select(async i =>
@@ -556,6 +561,6 @@ namespace MediaBrowser.Channels.JupiterBroadcasting
 
             return all.Items.OrderByDescending(i => i.DateCreated ?? DateTime.MinValue);
         }
-	}
+    }
 }
 
