@@ -266,7 +266,7 @@ namespace MediaBrowser.Channels.JupiterBroadcasting
 		public string url { get; set; }
 		
 		[XmlAttribute()]
-		public uint length { get; set; }
+		public long length { get; set; }
 		
 		[XmlAttribute()]
 		public string type { get; set; }

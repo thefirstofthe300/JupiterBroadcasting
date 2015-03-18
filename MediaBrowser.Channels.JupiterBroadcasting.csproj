@@ -60,6 +60,7 @@
     <None Include="MediaBrowser.Channels.JupiterBroadcasting.sln" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Resources\images\wtr.jpg" />
     <EmbeddedResource Include="Resources\images\jupiterbackdrop.jpg" />
     <Content Include="Resources\images\techtalk.jpg" />
     <EmbeddedResource Include="Resources\images\thumb.png" />
