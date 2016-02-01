@@ -13,16 +13,15 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>..\..\..\..\AppData\Roaming\MediaBrowser-Server\plugins</OutputPath>
+    <OutputPath>..\..\..\..\var\lib\docker-config\emby-server-beta\plugins</OutputPath>
     <DefineConstants>DEBUG;</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <ConsolePause>false</ConsolePause>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>full</DebugType>
     <Optimize>true</Optimize>
-    <OutputPath>..\..\..\..\AppData\Roaming\MediaBrowser-Server\plugins</OutputPath>
+    <OutputPath>..\..\..\..\var\lib\docker-config\emby-server-beta\plugins</OutputPath>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <ConsolePause>false</ConsolePause>
@@ -33,13 +32,16 @@
     <Reference Include="System.Xml.Serialization" />
     <Reference Include="System.Xml" />
     <Reference Include="MediaBrowser.Common">
-      <HintPath>packages\MediaBrowser.Common.3.0.616\lib\net45\MediaBrowser.Common.dll</HintPath>
+      <HintPath>packages\MediaBrowser.Common.3.0.641\lib\net45\MediaBrowser.Common.dll</HintPath>
     </Reference>
     <Reference Include="MediaBrowser.Model">
-      <HintPath>packages\MediaBrowser.Common.3.0.616\lib\net45\MediaBrowser.Model.dll</HintPath>
+      <HintPath>packages\MediaBrowser.Common.3.0.641\lib\net45\MediaBrowser.Model.dll</HintPath>
+    </Reference>
+    <Reference Include="Interfaces.IO">
+      <HintPath>packages\Interfaces.IO.1.0.0.5\lib\portable-net45+sl4+wp71+win8+wpa81\Interfaces.IO.dll</HintPath>
     </Reference>
     <Reference Include="MediaBrowser.Controller">
-      <HintPath>packages\MediaBrowser.Server.Core.3.0.616\lib\net45\MediaBrowser.Controller.dll</HintPath>
+      <HintPath>packages\MediaBrowser.Server.Core.3.0.641\lib\net45\MediaBrowser.Controller.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
