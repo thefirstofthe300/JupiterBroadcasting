@@ -13,7 +13,7 @@ using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Serialization;
 
-namespace MediaBrowser.Channels.JupiterBroadcasting
+namespace JupiterBroadcasting
 {
 	public class JupiterBroadcastingChannel : IChannel, ISupportsLatestMedia
 	{

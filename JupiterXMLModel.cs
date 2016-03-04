@@ -1,6 +1,6 @@
 ﻿using System.Xml.Serialization;
 
-namespace MediaBrowser.Channels.JupiterBroadcasting
+namespace JupiterBroadcasting
 {
 	[XmlType(AnonymousType = true)]
 	[XmlRoot(Namespace = "", IsNullable = false)]

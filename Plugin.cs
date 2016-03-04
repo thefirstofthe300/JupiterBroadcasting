@@ -3,7 +3,7 @@ using MediaBrowser.Common.Plugins;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Channels.JupiterBroadcasting.Configuration;
 
-namespace MediaBrowser.Plugins.JupiterBroadcasting
+namespace JupiterBroadcasting
 {
 	public class Plugin : BasePlugin<PluginConfiguration>
 	{
